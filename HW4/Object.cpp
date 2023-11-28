@@ -4,6 +4,7 @@
 
 #include "Object.h"
 #include "Camera.h"
+#include "UserTransforms.h"
 #include <VulkanLaunchpad.h>
 #include <glm/gtx/normal.hpp>
 #include <vulkan/vulkan.hpp>
@@ -20,6 +21,7 @@ extern vk::Device mDevice;
 extern vk::UniqueCommandPool mCommandPool;
 extern vk::Queue mQueue;
 extern std::string basePath;
+extern UserTransformations userTransforms;
 
 // The following variables are related to texture setup
 // --- Begin texture setup variables
@@ -36,6 +38,9 @@ VkBuffer mObjectVertexData;
 
 // A pipeline that can be used for HW4
 VkPipeline pipeline;
+
+// store user transforms
+glm::mat4 model = glm::mat4(1.0f);
 
 // Struct to pack object vertex data
 // Only positions for the HW4 Starter
@@ -88,7 +93,6 @@ void objectCreateGeometryAndBuffers(GLFWwindow *window) {
   cout << "Now Creating Camera and Pipeline " << endl;
 
   // All texture related setup
-
   objectCreateTextureImages();
   createTextureImageViews();
   createTextureSamplers();
@@ -219,8 +223,23 @@ void objectCreatePipeline() {
 // Function to update push constants.
 // For the starter example, only the model matrix is updated.
 void objectUpdateConstants() {
+  glm::mat4 rotation = glm::eulerAngleXYZ(
+      userTransforms.roll, userTransforms.yaw, userTransforms.pitch);
 
-  pushConstants.invView = glm::inverse(vklGetCameraViewMatrix(camera));
+  // Scaling
+  model = glm::scale(model, glm::vec3(userTransforms.scale));
+
+  // Rotations. Only difference between extrinisic and Intrinsic is the order
+  // in which they are applied
+  if (userTransforms.enableInstrinsicMode) {
+    // Intrinsic
+    model = model * rotation;
+  } else {
+    // Extrinsic
+    model = rotation * model;
+  }
+
+  pushConstants.invView = glm::inverse(vklGetCameraViewMatrix(camera) * model);
   pushConstants.proj = glm::vec4{near, far, aspect, fov};
   pushConstants.time = time_since_epoch;
 }
@@ -241,9 +260,7 @@ void objectCreateCamera(GLFWwindow *window) {
 // The code that follows is based on the texture setup code
 // provided by:
 // https://vulkan-tutorial.com/Texture_mapping/Images
-
 TextureInfo objectCreateTextureImage(const char *file) {
-
   TextureInfo retVal;
 
   int texWidth, texHeight, texChannels;
@@ -281,7 +298,6 @@ TextureInfo objectCreateTextureImage(const char *file) {
 }
 
 void objectCreateTextureImages() {
-
   // load each image up in turn
   for (const auto &filename : imageFiles) {
     auto const imagePath = basePath + std::string("/") + filename;

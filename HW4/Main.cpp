@@ -8,6 +8,7 @@
 
 // Include our framework and the Vulkan headers:
 #include "Camera.h"
+#include "UserTransforms.h"
 #include "VulkanLaunchpad.h"
 #include <vulkan/vulkan.h>
 
@@ -21,8 +22,10 @@
 #include <unordered_map>
 #include <vector>
 
-// vulkan related variables that are globally accessible.
+#define USER_TRANSFORM_ANGLE_INCREMENT 0.05f
+#define USER_TRANSFORM_SCALE_INCREMENT 0.05f
 
+// vulkan related variables that are globally accessible.
 VkDevice vk_device = VK_NULL_HANDLE;
 VkPhysicalDevice vk_physical_device = VK_NULL_HANDLE;
 VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
@@ -128,6 +131,7 @@ FilterSupportedLayers(std::vector<char const *> const &layers) {
 // camera and aspect ratio
 VklCamera *camera;
 float aspect;
+UserTransformations userTransforms;
 
 // the current time the simulation should display
 float time_since_epoch;
@@ -474,6 +478,79 @@ void handleGlfwKeyCallback(GLFWwindow *glfw_window, int key, int scancode,
 
   if (action == GLFW_RELEASE) {
     g_isGlfwKeyDown[key] = false;
+  }
+
+  if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+    userTransforms.enableInstrinsicMode = !userTransforms.enableInstrinsicMode;
+
+    std::string mode =
+        userTransforms.enableInstrinsicMode ? "INTRINSIC" : "EXTRINSIC";
+
+    std::cout << mode << " MODE" << std::endl;
+  }
+
+  if (key == GLFW_KEY_UP || key == GLFW_KEY_K) {
+    if (action == GLFW_PRESS) {
+      userTransforms.scale = 1.0f + USER_TRANSFORM_SCALE_INCREMENT;
+    } else if (action == GLFW_RELEASE) {
+      userTransforms.scale = 1.0f;
+    }
+  }
+
+  if (key == GLFW_KEY_DOWN || key == GLFW_KEY_J) {
+    if (action == GLFW_PRESS) {
+      userTransforms.scale = 1.0f - USER_TRANSFORM_SCALE_INCREMENT;
+    } else if (action == GLFW_RELEASE) {
+      userTransforms.scale = 1.0f;
+    }
+  }
+
+  if (key == GLFW_KEY_W) {
+    if (action == GLFW_PRESS) {
+      userTransforms.roll = -USER_TRANSFORM_ANGLE_INCREMENT;
+    } else if (action == GLFW_RELEASE) {
+      userTransforms.roll = 0;
+    }
+  }
+
+  if (key == GLFW_KEY_S) {
+    if (action == GLFW_PRESS) {
+      userTransforms.roll = USER_TRANSFORM_ANGLE_INCREMENT;
+    } else if (action == GLFW_RELEASE) {
+      userTransforms.roll = 0;
+    }
+  }
+
+  if (key == GLFW_KEY_D) {
+    if (action == GLFW_PRESS) {
+      userTransforms.yaw = USER_TRANSFORM_ANGLE_INCREMENT;
+    } else if (action == GLFW_RELEASE) {
+      userTransforms.yaw = 0;
+    }
+  }
+
+  if (key == GLFW_KEY_A) {
+    if (action == GLFW_PRESS) {
+      userTransforms.yaw = -USER_TRANSFORM_ANGLE_INCREMENT;
+    } else if (action == GLFW_RELEASE) {
+      userTransforms.yaw = 0;
+    }
+  }
+
+  if (key == GLFW_KEY_Q) {
+    if (action == GLFW_PRESS) {
+      userTransforms.pitch = USER_TRANSFORM_ANGLE_INCREMENT;
+    } else if (action == GLFW_RELEASE) {
+      userTransforms.pitch = 0;
+    }
+  }
+
+  if (key == GLFW_KEY_E) {
+    if (action == GLFW_PRESS) {
+      userTransforms.pitch = -USER_TRANSFORM_ANGLE_INCREMENT;
+    } else if (action == GLFW_RELEASE) {
+      userTransforms.pitch = 0;
+    }
   }
 
   // We mark the window that it should close if ESC is pressed:
