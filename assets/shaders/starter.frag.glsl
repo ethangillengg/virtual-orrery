@@ -1,8 +1,13 @@
 #version 450
 
 #define PI 3.1415926535897932384626433832795
-#define MAX_TEXTURES                                                           \
-  4 // save some space in the push constants by hard-wiring this
+// save some space in the push constants by hard-coding this
+#define MAX_TEXTURES 4
+
+#define TEXTURE_STARS 0
+#define TEXTURE_SUN 1
+#define TEXTURE_EARTH 2
+#define TEXTURE_MOON 3
 
 layout(location = 0) out vec4 color;
 
@@ -22,17 +27,13 @@ layout(binding = 0) uniform sampler2D textures[MAX_TEXTURES];
 
 // Material properties
 vec3 bg_color = vec3(0.00, 0.00, 0.05);
-
-void main() {
-
+void drawSphere(vec3 centerPos, int texIndex) {
   // intersect against sphere of radius 1 centered at the origin
-
   vec3 dir = normalize(d);
 
-  float prod = 2.0 * dot(p, dir);
-  float normp = length(p);
+  float prod = 2.0 * dot(centerPos, dir);
+  float normp = length(centerPos);
   float discriminant = prod * prod - 4.0 * (-1.0 + normp * normp);
-  color = vec4(bg_color, 1.0);
   if (discriminant >= 0.0) {
     // determine intersection point
     float t1 = 0.5 * (-prod - sqrt(discriminant));
@@ -48,7 +49,7 @@ void main() {
     }
     if (tmax > 0.0) {
       t = (tmin > 0) ? tmin : tmax;
-      vec3 ipoint = p + t * (dir);
+      vec3 ipoint = centerPos + t * (dir);
       vec3 normal = normalize(ipoint);
 
       // determine texture coordinates in spherical coordinates
@@ -67,8 +68,16 @@ void main() {
       // normalize coordinates for texture sampling.
       // Top-left of texture is (0,0) in Vulkan, so we can stick to spherical
       // coordinates
-      color = texture(textures[int(mod(pc.time, MAX_TEXTURES))],
+      color = texture(textures[int(mod(texIndex, MAX_TEXTURES))],
                       vec2(1.0 + 0.5 * theta / PI, phi / PI));
     }
   }
+}
+
+void main() {
+
+  color = vec4(bg_color, 1.0);
+  // test
+  drawSphere(p - 1.5, TEXTURE_EARTH);
+  drawSphere(p, TEXTURE_SUN);
 }
