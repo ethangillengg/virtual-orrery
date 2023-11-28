@@ -33,6 +33,8 @@
 **/buildLinux/
 **/cmake-build-debug/
 **/cmake-build-release/
+result
+renderdoc
 
 # Source Code
 *.ilk
@@ -42,9 +44,12 @@
 *.opendb
 
 #custom
+*.pdf
+.direnv/*
+models
 *.ipch
 *.dtbcache
-*.lock
+# *.lock
 *.ide*
 *.txt.user
 
@@ -84,3 +89,4 @@ _project
 
 # macOS
 .DS_Store
+30094990_HW*
