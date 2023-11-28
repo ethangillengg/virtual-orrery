@@ -163,10 +163,12 @@ void objectCreatePipeline() {
   // Pipeline creation
   // ------------------------------
 
-  auto const vertShaderName = basePath + std::string("/shaders/starter.vert");
+  auto const vertShaderName =
+      basePath + std::string("/shaders/starter.vert.glsl");
   if (!check_path(vertShaderName))
     throw std::runtime_error("ERROR: Could not load vertex shader!");
-  auto const fragShaderName = basePath + std::string("/shaders/starter.frag");
+  auto const fragShaderName =
+      basePath + std::string("/shaders/starter.frag.glsl");
   if (!check_path(fragShaderName))
     throw std::runtime_error("ERROR: Could not load fragment shader!");
 
