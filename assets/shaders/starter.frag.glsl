@@ -14,8 +14,11 @@
 #define TEXTURE_EARTH 2
 #define TEXTURE_MOON 3
 
-#define AXIAL_PERIOD_SUN_MOON 1 / 27
-#define AXIAL_PERIOD_EARTH 1 / (27 * 12)
+#define AXIAL_PERIOD_SUN_MOON 27.0
+#define AXIAL_PERIOD_EARTH 1.0
+
+#define ORBITAL_PERIOD_MOON 27.0
+#define ORBITAL_PERIOD_EARTH (12.0 * ORBITAL_PERIOD_MOON)
 
 // #define MODEL_RADIUS_SCALE 99999
 // #define MODEL_DISTANCE_SCALE 999999
@@ -98,11 +101,13 @@ void drawSphere(vec3 centerPos, float radius, int texIndex) {
         theta = atan(normal.y, normal.x);
       }
 
+      // Axial rotations
       if (texIndex == TEXTURE_MOON || texIndex == TEXTURE_SUN) {
-        theta += pc.time * AXIAL_PERIOD_SUN_MOON;
+        theta += pc.time / AXIAL_PERIOD_SUN_MOON;
       } else if (texIndex == TEXTURE_EARTH) {
-        theta += pc.time * AXIAL_PERIOD_EARTH;
+        theta += pc.time / AXIAL_PERIOD_EARTH;
       }
+
       // normalize coordinates for texture sampling.
       // Top-left of texture is (0,0) in Vulkan, so we can stick to spherical
       // coordinates
@@ -113,12 +118,26 @@ void drawSphere(vec3 centerPos, float radius, int texIndex) {
 }
 
 void main() {
-
   color = vec4(bg_color, 1.0);
 
+  // distance from Earth -> Sun
+  float earthOrbitalRadius = 2.0;
+  // distance from Moon -> Earth
+  float moonOrbitalRadius = 0.5;
+
+  vec3 earthCenter =
+      earthOrbitalRadius * vec3(cos(pc.time / ORBITAL_PERIOD_EARTH), 0.0,
+                                sin(pc.time / ORBITAL_PERIOD_EARTH));
+  // Earth + moon orbit component
+  vec3 moonCenter =
+      earthCenter +
+      moonOrbitalRadius * vec3(cos(pc.time / ORBITAL_PERIOD_MOON), 0.0,
+                               sin(pc.time / ORBITAL_PERIOD_MOON));
+
   // So that it does not get cut off
-  drawSphere(vec3(0), largestT * 0.99, TEXTURE_STARS);
+  float skyBoxRadius = largestT * 0.99;
+  drawSphere(vec3(0), skyBoxRadius, TEXTURE_STARS);
   drawSphere(vec3(0), 0.25, TEXTURE_SUN);
-  drawSphere(vec3(0.7, -0.3, 0.6), 0.2, TEXTURE_EARTH);
-  drawSphere(vec3(0.95, -0.4, 0.9), 0.08, TEXTURE_MOON);
+  drawSphere(earthCenter, 0.2, TEXTURE_EARTH);
+  drawSphere(moonCenter, 0.08, TEXTURE_MOON);
 }
