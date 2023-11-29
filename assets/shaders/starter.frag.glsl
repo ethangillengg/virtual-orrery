@@ -49,7 +49,7 @@ vec3 orbitAbout(Celestial orbited, float orbitalPeriod, float orbitalRadius);
 
 vec3 lightColor = normalize(vec3(1.0f, 1.0f, 1.0f));
 vec3 lightPos = vec3(0.0, 0.0, 0.0);
-vec3 ambient = 0.05 * lightColor;
+vec3 ambient = 0.1 * lightColor;
 
 void main() {
   color = vec4(bg_color, 1.0);
@@ -78,7 +78,8 @@ void main() {
       0.2,                                        //
       TEXTURE_EARTH,                              //
       AXIAL_PERIOD_EARTH,                         //
-      false};
+      false                                       //
+  };
   drawCelestial(earth);
 
   Celestial moon = {
@@ -95,8 +96,9 @@ void main() {
 vec3 orbitAbout(Celestial orbited, float orbitalPeriod, float orbitalRadius) {
 
   // accounts for current orbital position based on time
-  vec3 orbitingCenter = orbitalRadius * vec3(cos(pc.time / orbitalPeriod), 0.0,
-                                             sin(pc.time / orbitalPeriod));
+  // sin and cos order to ensure it is counter-clockwise rotation
+  vec3 orbitingCenter = orbitalRadius * vec3(sin(pc.time / orbitalPeriod), 0.0,
+                                             cos(pc.time / orbitalPeriod));
   // since we are orbiting about the orbited body,
   // we need to account for its position
   orbitingCenter += orbited.pos;
@@ -107,7 +109,7 @@ void drawCelestial(Celestial celestial) {
   // intersect against sphere of radius 1 centered at the origin
   vec3 dir = normalize(d);
 
-  float prod = dot(2.0 * dir, (p - celestial.pos));
+  float prod = 2.0 * dot(dir, (p - celestial.pos));
   float normp = length(p - celestial.pos);
   float c = (normp * normp) - (celestial.radius * celestial.radius);
   float discriminant = (prod * prod) - (4.0 * c);
@@ -141,8 +143,8 @@ void drawCelestial(Celestial celestial) {
       vec3 lightDir = normalize(lightPos - ipoint);
       vec3 diffuse = max(dot(normal, lightDir), 0.0f) * lightColor;
       vec3 reflectDir = reflect(lightDir, normal);
-      float spec = pow(max(dot(dir, reflectDir), 0.0), 32);
-      vec3 specular = 0.3 * spec * lightColor;
+      float spec = pow(max(dot(dir, reflectDir), 0.0), 64);
+      vec3 specular = 0.9 * spec * lightColor;
 
       // determine texture coordinates in spherical coordinates
       // First rotate about x through 90 degrees so that y is up.
@@ -157,9 +159,14 @@ void drawCelestial(Celestial celestial) {
         theta = atan(normal.y, normal.x);
       }
 
+      // Axial rotations
+      // only apply if > 0
       if (celestial.axialPeriod > 0.0) {
-        // Axial rotations
-        theta += pc.time / celestial.axialPeriod;
+        theta -= pc.time / celestial.axialPeriod;
+        // Offset so that moon is facing the earth
+        if (celestial.texIndex == TEXTURE_MOON) {
+          theta += 0.5 * PI;
+        }
       }
 
       // normalize coordinates for texture sampling.
