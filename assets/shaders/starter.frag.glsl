@@ -9,6 +9,14 @@
 #define TEXTURE_EARTH 2
 #define TEXTURE_MOON 3
 
+#define TEXTURE_STARS 0
+#define TEXTURE_SUN 1
+#define TEXTURE_EARTH 2
+#define TEXTURE_MOON 3
+
+#define AXIAL_PERIOD_SUN_MOON 1 / 27
+#define AXIAL_PERIOD_EARTH 1 / (27 * 12)
+
 // #define MODEL_RADIUS_SCALE 99999
 // #define MODEL_DISTANCE_SCALE 999999
 // volumetric mean radii in Km as specified in:
@@ -88,6 +96,12 @@ void drawSphere(vec3 centerPos, float radius, int texIndex) {
         theta = sign(normal.y) * PI * 0.5;
       } else {
         theta = atan(normal.y, normal.x);
+      }
+
+      if (texIndex == TEXTURE_MOON || texIndex == TEXTURE_SUN) {
+        theta += pc.time * AXIAL_PERIOD_SUN_MOON;
+      } else if (texIndex == TEXTURE_EARTH) {
+        theta += pc.time * AXIAL_PERIOD_EARTH;
       }
       // normalize coordinates for texture sampling.
       // Top-left of texture is (0,0) in Vulkan, so we can stick to spherical
