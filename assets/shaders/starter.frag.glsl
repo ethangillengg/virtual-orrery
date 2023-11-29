@@ -9,6 +9,18 @@
 #define TEXTURE_EARTH 2
 #define TEXTURE_MOON 3
 
+// #define MODEL_RADIUS_SCALE 99999
+// #define MODEL_DISTANCE_SCALE 999999
+// volumetric mean radii in Km as specified in:
+// (https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html)
+// (https://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html)
+// #define RADIUS_SUN 695700.0 / 10 / MODEL_RADIUS_SCALE
+// #define RADIUS_EARTH 6378.1 / MODEL_RADIUS_SCALE
+// #define RADIUS_MOON 1738.1 / MODEL_RADIUS_SCALE
+//
+// #define DISTANCE_EARTH 14960000 / MODEL_DISTANCE_SCALE
+// #define DISTANCE_MOON (378000 / MODEL_DISTANCE_SCALE) + DISTANCE_EARTH
+
 layout(location = 0) out vec4 color;
 
 // interpolated position and direction of ray in world space
@@ -28,7 +40,7 @@ layout(binding = 0) uniform sampler2D textures[MAX_TEXTURES];
 // Material properties
 vec3 bg_color = vec3(0.00, 0.00, 0.5);
 // For depth testing
-float largestT = 99999999;
+float largestT = 999999999;
 
 void drawSphere(vec3 centerPos, float radius, int texIndex) {
   // intersect against sphere of radius 1 centered at the origin
@@ -80,9 +92,8 @@ void drawSphere(vec3 centerPos, float radius, int texIndex) {
       // normalize coordinates for texture sampling.
       // Top-left of texture is (0,0) in Vulkan, so we can stick to spherical
       // coordinates
-      // color = vec4(vec3(closestZ), 1.0);
-      color = texture(textures[int(mod(texIndex, MAX_TEXTURES))],
-                      vec2(1.0 + 0.5 * theta / PI, phi / PI));
+      color =
+          texture(textures[texIndex], vec2(1.0 + 0.5 * theta / PI, phi / PI));
     }
   }
 }
@@ -93,7 +104,7 @@ void main() {
 
   // So that it does not get cut off
   drawSphere(vec3(0), largestT * 0.99, TEXTURE_STARS);
-  drawSphere(vec3(0), 0.5, TEXTURE_SUN);
-  drawSphere(vec3(0.0, 0.0, 0.9), 0.2, TEXTURE_EARTH);
-  drawSphere(vec3(0.0, 0.0, 1.3), 0.1, TEXTURE_MOON);
+  drawSphere(vec3(0), 0.25, TEXTURE_SUN);
+  drawSphere(vec3(0.7, -0.3, 0.6), 0.2, TEXTURE_EARTH);
+  drawSphere(vec3(0.95, -0.4, 0.9), 0.08, TEXTURE_MOON);
 }
