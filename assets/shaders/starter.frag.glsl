@@ -41,10 +41,15 @@ struct Celestial {
   float radius;
   int texIndex;
   float axialPeriod; // 0 for no axial rotation
+  bool noLighting;   // true if we don't want to apply lighting to this object
 };
 
 void drawCelestial(Celestial celestial);
 vec3 orbitAbout(Celestial orbited, float orbitalPeriod, float orbitalRadius);
+
+vec3 lightColor = normalize(vec3(1.0f, 1.0f, 1.0f));
+vec3 lightPos = vec3(0.0, 0.0, 0.0);
+vec3 ambient = 0.05 * lightColor;
 
 void main() {
   color = vec4(bg_color, 1.0);
@@ -53,15 +58,17 @@ void main() {
       vec3(0),         //
       largestT * 0.99, // So that it does not get cut off
       TEXTURE_SKYBOX,  //
-      0.0              // no axial rotation
+      0.0,             // no axial rotation
+      true             // no lighting
   };
   drawCelestial(skybox);
 
   Celestial sun = {
-      vec3(0),              //
-      0.3,                  //
-      TEXTURE_SUN,          //
-      AXIAL_PERIOD_SUN_MOON //
+      vec3(0),               //
+      0.3,                   //
+      TEXTURE_SUN,           //
+      AXIAL_PERIOD_SUN_MOON, //
+      true                   // no lighting
 
   };
   drawCelestial(sun);
@@ -70,8 +77,8 @@ void main() {
       orbitAbout(sun, ORBITAL_PERIOD_EARTH, 1.5), // orbit of Earth -> Sun
       0.2,                                        //
       TEXTURE_EARTH,                              //
-      AXIAL_PERIOD_EARTH                          //
-  };
+      AXIAL_PERIOD_EARTH,                         //
+      false};
   drawCelestial(earth);
 
   Celestial moon = {
@@ -79,7 +86,8 @@ void main() {
                  0.5),       // orbit of Moon -> Earth
       earth.radius * 0.2727, // roughly
       TEXTURE_MOON,          //
-      AXIAL_PERIOD_SUN_MOON  //
+      AXIAL_PERIOD_SUN_MOON, //
+      false                  //
   };
   drawCelestial(moon);
 }
@@ -129,6 +137,13 @@ void drawCelestial(Celestial celestial) {
       vec3 ipoint = (p + (t * dir));
       vec3 normal = normalize(ipoint - celestial.pos);
 
+      // ipoint is on the surface that is being lit
+      vec3 lightDir = normalize(lightPos - ipoint);
+      vec3 diffuse = max(dot(normal, lightDir), 0.0f) * lightColor;
+      vec3 reflectDir = reflect(lightDir, normal);
+      float spec = pow(max(dot(dir, reflectDir), 0.0), 32);
+      vec3 specular = 0.3 * spec * lightColor;
+
       // determine texture coordinates in spherical coordinates
       // First rotate about x through 90 degrees so that y is up.
       normal.z = -normal.z;
@@ -150,8 +165,13 @@ void drawCelestial(Celestial celestial) {
       // normalize coordinates for texture sampling.
       // Top-left of texture is (0,0) in Vulkan, so we can stick to spherical
       // coordinates
-      color = texture(textures[celestial.texIndex],
-                      vec2(1.0 + 0.5 * theta / PI, phi / PI));
+      vec4 texColor = texture(textures[celestial.texIndex],
+                              vec2(1.0 + 0.5 * theta / PI, phi / PI));
+      if (celestial.noLighting) {
+        color = texColor;
+      } else {
+        color = vec4(ambient + diffuse + specular, 1.0) * texColor;
+      }
     }
   }
 }
