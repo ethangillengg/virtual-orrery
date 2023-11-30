@@ -472,6 +472,12 @@ std::unordered_map<int, bool> g_isGlfwKeyDown;
 
 void handleGlfwKeyCallback(GLFWwindow *glfw_window, int key, int scancode,
                            int action, int mods) {
+
+  // exit early if we weren't asked to perform any action
+  // if ((action != GLFW_PRESS) && (action != GLFW_REPEAT)) {
+  //   return;
+  // }
+
   if (action == GLFW_PRESS) {
     g_isGlfwKeyDown[key] = true;
   }
@@ -489,89 +495,83 @@ void handleGlfwKeyCallback(GLFWwindow *glfw_window, int key, int scancode,
     std::cout << mode << " MODE" << std::endl;
   }
 
-  if (key == GLFW_KEY_UP || key == GLFW_KEY_K) {
+  // we've been asked to do something
+  switch (key) {
+    // ------ SCALING --------
+  case GLFW_KEY_UP:
+  case GLFW_KEY_K:
     if (action == GLFW_PRESS) {
       userTransforms.scale = 1.0f + USER_TRANSFORM_SCALE_INCREMENT;
     } else if (action == GLFW_RELEASE) {
       userTransforms.scale = 1.0f;
     }
-  }
-
-  if (key == GLFW_KEY_DOWN || key == GLFW_KEY_J) {
+    break;
+  case GLFW_KEY_DOWN:
+  case GLFW_KEY_J:
     if (action == GLFW_PRESS) {
       userTransforms.scale = 1.0f - USER_TRANSFORM_SCALE_INCREMENT;
     } else if (action == GLFW_RELEASE) {
       userTransforms.scale = 1.0f;
     }
-  }
-
-  if (key == GLFW_KEY_W) {
+    break;
+  // -----------------------
+  // ------ ROTATIONS ------
+  case GLFW_KEY_W:
     if (action == GLFW_PRESS) {
       userTransforms.roll = -USER_TRANSFORM_ANGLE_INCREMENT;
     } else if (action == GLFW_RELEASE) {
       userTransforms.roll = 0;
     }
-  }
-
-  if (key == GLFW_KEY_S) {
+    break;
+  case GLFW_KEY_S:
     if (action == GLFW_PRESS) {
       userTransforms.roll = USER_TRANSFORM_ANGLE_INCREMENT;
     } else if (action == GLFW_RELEASE) {
       userTransforms.roll = 0;
     }
-  }
-
-  if (key == GLFW_KEY_D) {
+    break;
+  case GLFW_KEY_D:
     if (action == GLFW_PRESS) {
       userTransforms.yaw = USER_TRANSFORM_ANGLE_INCREMENT;
     } else if (action == GLFW_RELEASE) {
       userTransforms.yaw = 0;
     }
-  }
-
-  if (key == GLFW_KEY_A) {
+    break;
+  case GLFW_KEY_A:
     if (action == GLFW_PRESS) {
       userTransforms.yaw = -USER_TRANSFORM_ANGLE_INCREMENT;
     } else if (action == GLFW_RELEASE) {
       userTransforms.yaw = 0;
     }
-  }
-
-  if (key == GLFW_KEY_Q) {
+    break;
+  case GLFW_KEY_Q:
     if (action == GLFW_PRESS) {
       userTransforms.pitch = USER_TRANSFORM_ANGLE_INCREMENT;
     } else if (action == GLFW_RELEASE) {
       userTransforms.pitch = 0;
     }
-  }
-
-  if (key == GLFW_KEY_E) {
+    break;
+  case GLFW_KEY_E:
     if (action == GLFW_PRESS) {
       userTransforms.pitch = -USER_TRANSFORM_ANGLE_INCREMENT;
     } else if (action == GLFW_RELEASE) {
       userTransforms.pitch = 0;
     }
-  }
-
-  // We mark the window that it should close if ESC is pressed:
-  if (action == GLFW_RELEASE && key == GLFW_KEY_ESCAPE) {
-    glfwSetWindowShouldClose(glfw_window, true);
-  }
-
-  // exit early if we weren't asked to perform any action
-  if ((action != GLFW_PRESS) && (action != GLFW_REPEAT))
-    return;
-
-  // we've been asked to do something
-  switch (key) {
-
-  // handle moving forward and backward in time
+    break;
+  // -----------------------
+  // ------- TIME ----------
   case GLFW_KEY_LEFT:
+  case GLFW_KEY_H:
     time_since_epoch -= TIME_DELTA;
     break;
   case GLFW_KEY_RIGHT:
+  case GLFW_KEY_L:
     time_since_epoch += TIME_DELTA;
     break;
+  case GLFW_KEY_ESCAPE:
+    glfwSetWindowShouldClose(glfw_window, true);
+    break;
+    // -----------------------
 
     // IDEAS: add controls to reset time to a fixed value, or change time
     // faster/slower
