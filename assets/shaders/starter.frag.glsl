@@ -40,12 +40,14 @@ struct Celestial {
   vec3 pos;
   float radius;
   int texIndex;
-  float axialPeriod; // 0 for no axial rotation
   bool noLighting;   // true if we don't want to apply lighting to this object
+  float axialPeriod; // 0 for no axial rotation
+  float axialTiltDeg;
 };
 
 void drawCelestial(Celestial celestial);
-vec3 orbitAbout(Celestial orbited, float orbitalPeriod, float orbitalRadius);
+vec3 orbitAbout(Celestial orbited, float orbitalPeriod, float orbitalRadius,
+                float orbitalInclinationDeg);
 
 vec3 lightColor = normalize(vec3(1.0f, 1.0f, 1.0f));
 vec3 lightPos = vec3(0.0, 0.0, 0.0);
@@ -58,8 +60,9 @@ void main() {
       vec3(0),         //
       largestT * 0.99, // So that it does not get cut off
       TEXTURE_SKYBOX,  //
+      true,            // no lighting
       0.0,             // no axial rotation
-      true             // no lighting
+      0.0,             // no axial tilt
   };
   drawCelestial(skybox);
 
@@ -67,40 +70,51 @@ void main() {
       vec3(0),               //
       0.3,                   //
       TEXTURE_SUN,           //
+      true,                  // no lighting
       AXIAL_PERIOD_SUN_MOON, //
-      true                   // no lighting
+      0.0,                   // no axial tilt
 
   };
   drawCelestial(sun);
 
   Celestial earth = {
-      orbitAbout(sun, ORBITAL_PERIOD_EARTH, 1.5), // orbit of Earth -> Sun
-      0.2,                                        //
-      TEXTURE_EARTH,                              //
-      AXIAL_PERIOD_EARTH,                         //
-      false                                       //
+      orbitAbout(sun, ORBITAL_PERIOD_EARTH, 1.5, 0.0), // orbit of Earth -> Sun
+      0.2,                                             //
+      TEXTURE_EARTH,                                   //
+      false,                                           //
+      AXIAL_PERIOD_EARTH,                              //
+      -23.44,                                          // in degrees
   };
   drawCelestial(earth);
 
   Celestial moon = {
-      orbitAbout(earth, ORBITAL_PERIOD_MOON,
-                 0.5),       // orbit of Moon -> Earth
+      orbitAbout(earth, ORBITAL_PERIOD_MOON, 0.5,
+                 -5.14),     // orbit of Moon -> Earth
       earth.radius * 0.2727, // roughly
       TEXTURE_MOON,          //
+      false,                 //
       AXIAL_PERIOD_SUN_MOON, //
-      false                  //
+      6.68,                  // in degrees
   };
   drawCelestial(moon);
 }
 
-vec3 orbitAbout(Celestial orbited, float orbitalPeriod, float orbitalRadius) {
+vec3 orbitAbout(Celestial orbited, float orbitalPeriod, float orbitalRadius,
+                float orbitalInclinationDeg) {
 
   // accounts for current orbital position based on time
   // sin and cos order to ensure it is counter-clockwise rotation
   vec3 orbitingCenter = orbitalRadius * vec3(sin(pc.time / orbitalPeriod), 0.0,
                                              cos(pc.time / orbitalPeriod));
-  // since we are orbiting about the orbited body,
-  // we need to account for its position
+
+  // Sin(o/h) to get y-offset
+  float axialYOffset = orbitalRadius * sin(radians(orbitalInclinationDeg));
+  // Modulate from -1 to 1 based on time since the orbit is diagonal
+  axialYOffset *= sin(pc.time / orbitalPeriod);
+  orbitingCenter.y += axialYOffset;
+
+  //  since we are orbiting about the orbited body,
+  //  we need to account for its position
   orbitingCenter += orbited.pos;
   return orbitingCenter;
 }
@@ -150,6 +164,11 @@ void drawCelestial(Celestial celestial) {
       // First rotate about x through 90 degrees so that y is up.
       normal.z = -normal.z;
       normal = normal.xzy;
+      normal = vec3(normal.x,
+                    normal.y * cos(radians(celestial.axialTiltDeg)) -
+                        normal.z * sin(radians(celestial.axialTiltDeg)),
+                    normal.y * sin(radians(celestial.axialTiltDeg)) +
+                        normal.z * cos(radians(celestial.axialTiltDeg)));
 
       float phi = acos(normal.z);
       float theta;
