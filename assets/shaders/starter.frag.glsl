@@ -34,7 +34,7 @@ pc;
 layout(binding = 0) uniform sampler2D textures[MAX_TEXTURES];
 
 const vec3 bg_color = vec3(0.00, 0.00, 0.5);
-float largestT = 999999999; // For depth testing
+float largestT = 999999999;  // For depth testing
 
 struct Celestial {
   vec3 pos;
@@ -46,12 +46,13 @@ struct Celestial {
 };
 
 void drawCelestial(Celestial celestial);
+void castShadow(Celestial celestial, Celestial shadowCaster);
 vec3 orbitAbout(Celestial orbited, float orbitalPeriod, float orbitalRadius,
                 float orbitalInclinationDeg);
 
 vec3 lightColor = normalize(vec3(1.0f, 1.0f, 1.0f));
 vec3 lightPos = vec3(0.0, 0.0, 0.0);
-vec3 ambient = 0.1 * lightColor;
+vec3 ambient = 0.01 * lightColor;
 
 void main() {
   color = vec4(bg_color, 1.0);
@@ -97,11 +98,13 @@ void main() {
       6.68,                  // in degrees
   };
   drawCelestial(moon);
+
+  castShadow(earth, moon);
+  castShadow(moon, earth);
 }
 
 vec3 orbitAbout(Celestial orbited, float orbitalPeriod, float orbitalRadius,
                 float orbitalInclinationDeg) {
-
   // accounts for current orbital position based on time
   // sin and cos order to ensure it is counter-clockwise rotation
   vec3 orbitingCenter = orbitalRadius * vec3(sin(pc.time / orbitalPeriod), 0.0,
@@ -109,12 +112,13 @@ vec3 orbitAbout(Celestial orbited, float orbitalPeriod, float orbitalRadius,
 
   // Sin(o/h) to get y-offset
   float axialYOffset = orbitalRadius * sin(radians(orbitalInclinationDeg));
+
   // Modulate from -1 to 1 based on time since the orbit is diagonal
   axialYOffset *= sin(pc.time / orbitalPeriod);
   orbitingCenter.y += axialYOffset;
 
-  //  since we are orbiting about the orbited body,
-  //  we need to account for its position
+  // since we are orbiting about the orbited body,
+  // we need to account for its position
   orbitingCenter += orbited.pos;
   return orbitingCenter;
 }
@@ -155,15 +159,15 @@ void drawCelestial(Celestial celestial) {
 
       // ipoint is on the surface that is being lit
       vec3 lightDir = normalize(lightPos - ipoint);
-      vec3 diffuse = max(dot(normal, lightDir), 0.0f) * lightColor;
+      vec3 diffuse = 1.9 * max(dot(normal, lightDir), 0.0f) * lightColor;
       vec3 reflectDir = reflect(lightDir, normal);
       float spec = pow(max(dot(dir, reflectDir), 0.0), 64);
       vec3 specular = 0.9 * spec * lightColor;
 
       // determine texture coordinates in spherical coordinates
-      // First rotate about x through 90 degrees so that y is up.
       normal.z = -normal.z;
       normal = normal.xzy;
+      // Axial tilt applied in spherical coordinates
       normal = vec3(normal.x,
                     normal.y * cos(radians(celestial.axialTiltDeg)) -
                         normal.z * sin(radians(celestial.axialTiltDeg)),
@@ -193,10 +197,84 @@ void drawCelestial(Celestial celestial) {
       // coordinates
       vec4 texColor = texture(textures[celestial.texIndex],
                               vec2(1.0 + 0.5 * theta / PI, phi / PI));
+      color = texColor;
+
       if (celestial.noLighting) {
         color = texColor;
       } else {
         color = vec4(ambient + diffuse + specular, 1.0) * texColor;
+      }
+    }
+  }
+}
+
+void castShadow(Celestial celestial, Celestial shadowCaster) {
+  // intersect against sphere of radius 1 centered at the origin
+  vec3 dir = normalize(d);
+
+  float prod = 2.0 * dot(dir, (p - celestial.pos));
+  float normp = length(p - celestial.pos);
+  float c = (normp * normp) - (celestial.radius * celestial.radius);
+  float discriminant = (prod * prod) - (4.0 * c);
+  if (discriminant >= 0.0) {
+    // determine intersection point
+    float t1 = 0.5 * (-prod - sqrt(discriminant));
+    float t2 = 0.5 * (-prod + sqrt(discriminant));
+    float tmin, tmax;
+    float t;
+    if (t1 < t2) {
+      tmin = t1;
+      tmax = t2;
+    } else {
+      tmin = t2;
+      tmax = t1;
+    }
+    if (tmax > 0.0) {
+      t = (tmin > 0) ? tmin : tmax;
+
+      // Don't draw if the fragment is behind something else
+      if (t > largestT) {
+        return;
+      } else {
+        largestT = t;
+      }
+
+      vec3 ipoint = (p + (t * dir));
+      vec3 normal = normalize(ipoint - celestial.pos);
+
+      // ipoint is on the surface that is being lit
+
+      vec3 dir = normalize(ipoint - lightPos);
+      //
+      float prod = 2.0 * dot(dir, (lightPos - shadowCaster.pos));
+      float normp = length(lightPos - shadowCaster.pos);
+      float c = (normp * normp) - (shadowCaster.radius * shadowCaster.radius);
+      float discriminant = (prod * prod) - (4.0 * c);
+      if (discriminant >= 0.0) {
+        // determine intersection point
+        float t1 = 0.5 * (-prod - sqrt(discriminant));
+        float t2 = 0.5 * (-prod + sqrt(discriminant));
+        float tmin, tmax;
+        float t;
+        if (t1 < t2) {
+          tmin = t1;
+          tmax = t2;
+        } else {
+          tmin = t2;
+          tmax = t1;
+        }
+        if (tmax > 0.0) {
+          t = (tmin > 0) ? tmin : tmax;
+
+          vec3 shadowIPoint = (lightPos + (t * dir));
+          vec3 shadowDir = normalize(shadowIPoint - ipoint);
+
+          float shadowIntensity = 0.2 * dot(shadowDir, normal);
+
+          if (shadowIntensity > 0) {
+            color *= shadowIntensity;
+          }
+        }
       }
     }
   }
