@@ -573,9 +573,9 @@ void handleGlfwKeyCallback(GLFWwindow *glfw_window, int key, int scancode,
   case GLFW_KEY_L:
     // if shift is pressed, move faster
     if (mods == GLFW_MOD_SHIFT) {
-      time_since_epoch -= 10 * TIME_DELTA;
+      time_since_epoch += 10 * TIME_DELTA;
     } else {
-      time_since_epoch -= TIME_DELTA;
+      time_since_epoch += TIME_DELTA;
     }
     break;
   case GLFW_KEY_ESCAPE:
@@ -583,6 +583,14 @@ void handleGlfwKeyCallback(GLFWwindow *glfw_window, int key, int scancode,
     break;
     // -----------------------
     // -------- MISC ---------
+  case GLFW_KEY_TAB:
+    if (action == GLFW_PRESS) {
+      userTransforms.enableShading = !userTransforms.enableShading;
+      std::cout << "SHADING "
+                << (userTransforms.enableShading ? "ENABLED" : "DISABLED")
+                << std::endl;
+    }
+    break;
   case GLFW_KEY_R: // Reset all state
     time_since_epoch = 0;
     userTransforms.reset = true;

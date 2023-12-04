@@ -28,13 +28,14 @@ layout(push_constant) uniform constants {
   mat4 invView; // camera-to-world
   vec4 proj;    // (near, far, aspect, fov)
   float time;
+  bool enableShading;
 }
 pc;
 
 layout(binding = 0) uniform sampler2D textures[MAX_TEXTURES];
 
 const vec3 bg_color = vec3(0.00, 0.00, 0.5);
-float largestT = 999999999;  // For depth testing
+float largestT = 999999999; // For depth testing
 
 struct Celestial {
   vec3 pos;           // center position of celestial body
@@ -99,8 +100,10 @@ void main() {
   };
   drawCelestial(moon);
 
-  castShadow(earth, moon);
-  castShadow(moon, earth);
+  if (pc.enableShading) {
+    castShadow(earth, moon);
+    castShadow(moon, earth);
+  }
 }
 
 vec3 orbitAbout(Celestial orbited, float orbitalPeriod, float orbitalRadius,
@@ -199,8 +202,8 @@ void drawCelestial(Celestial celestial) {
                               vec2(1.0 + 0.5 * theta / PI, phi / PI));
       color = texColor;
 
-      if (celestial.noLighting) {
-        color = texColor;
+      if (!pc.enableShading || celestial.noLighting) {
+        return;
       } else {
         color = vec4(ambient + diffuse + specular, 1.0) * texColor;
       }
@@ -208,7 +211,8 @@ void drawCelestial(Celestial celestial) {
   }
 }
 
-// the fact that I did not have time to refactor this will forever be my greatest regret in this class ;-;
+// the fact that I did not have time to refactor this will forever be my
+// greatest regret in this class ;-;
 void castShadow(Celestial celestial, Celestial shadowCaster) {
   // intersect against sphere of radius 1 centered at the origin
   vec3 dir = normalize(d);

@@ -27,6 +27,7 @@ It is based on based on [VulkanLaunchpad](https://github.com/cg-tuwien/VulkanLau
 #### Miscellaneous
 
 - `Space`: Toggle intrinsic/extrinsic rotation mode
+- `Tab`: Toggle shading (both phong and shadow casting)
 - `R`: Reset to initial state
 
 ## Setup

@@ -55,6 +55,7 @@ struct ObjectPushConstants {
   glm::vec4
       proj;   // {near, far, aspect, fov} rather than the matrix for ray-tracing
   float time; // you'll use this to place everything in the scene
+  bool enableShading;
 } pushConstants;
 
 // camera related variables
@@ -244,6 +245,7 @@ void objectUpdateConstants() {
     userTransforms.reset = false;
   }
 
+  pushConstants.enableShading = userTransforms.enableShading;
   pushConstants.invView = glm::inverse(vklGetCameraViewMatrix(camera) * model);
   pushConstants.proj = glm::vec4{near, far, aspect, fov};
   pushConstants.time = time_since_epoch;
