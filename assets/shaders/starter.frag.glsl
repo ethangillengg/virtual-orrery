@@ -208,6 +208,7 @@ void drawCelestial(Celestial celestial) {
   }
 }
 
+// the fact that I did not have time to refactor this will forever be my greatest regret in this class ;-;
 void castShadow(Celestial celestial, Celestial shadowCaster) {
   // intersect against sphere of radius 1 centered at the origin
   vec3 dir = normalize(d);

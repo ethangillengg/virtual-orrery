@@ -239,6 +239,11 @@ void objectUpdateConstants() {
     model = rotation * model;
   }
 
+  if (userTransforms.reset) {
+    model = glm::mat4(1.0f);
+    userTransforms.reset = false;
+  }
+
   pushConstants.invView = glm::inverse(vklGetCameraViewMatrix(camera) * model);
   pushConstants.proj = glm::vec4{near, far, aspect, fov};
   pushConstants.time = time_since_epoch;

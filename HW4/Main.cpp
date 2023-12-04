@@ -22,8 +22,8 @@
 #include <unordered_map>
 #include <vector>
 
-#define USER_TRANSFORM_ANGLE_INCREMENT 0.05f
-#define USER_TRANSFORM_SCALE_INCREMENT 0.05f
+#define USER_TRANSFORM_ANGLE_INCREMENT 0.02f
+#define USER_TRANSFORM_SCALE_INCREMENT 0.02f
 
 // vulkan related variables that are globally accessible.
 VkDevice vk_device = VK_NULL_HANDLE;
@@ -135,7 +135,7 @@ UserTransformations userTransforms;
 
 // the current time the simulation should display
 float time_since_epoch;
-constexpr float TIME_DELTA = 1.f;
+constexpr float TIME_DELTA = .2f;
 
 // use this to find textures and shaders
 std::string basePath(TO_LITERAL(ASSET_DIR));
@@ -562,19 +562,31 @@ void handleGlfwKeyCallback(GLFWwindow *glfw_window, int key, int scancode,
   // ------- TIME ----------
   case GLFW_KEY_LEFT:
   case GLFW_KEY_H:
-    time_since_epoch -= TIME_DELTA;
+    // if shift is pressed, move faster
+    if (mods == GLFW_MOD_SHIFT) {
+      time_since_epoch -= 10 * TIME_DELTA;
+    } else {
+      time_since_epoch -= TIME_DELTA;
+    }
     break;
   case GLFW_KEY_RIGHT:
   case GLFW_KEY_L:
-    time_since_epoch += TIME_DELTA;
+    // if shift is pressed, move faster
+    if (mods == GLFW_MOD_SHIFT) {
+      time_since_epoch -= 10 * TIME_DELTA;
+    } else {
+      time_since_epoch -= TIME_DELTA;
+    }
     break;
   case GLFW_KEY_ESCAPE:
     glfwSetWindowShouldClose(glfw_window, true);
     break;
     // -----------------------
-
-    // IDEAS: add controls to reset time to a fixed value, or change time
-    // faster/slower
+    // -------- MISC ---------
+  case GLFW_KEY_R: // Reset all state
+    time_since_epoch = 0;
+    userTransforms.reset = true;
+    break;
   }
 }
 
@@ -691,8 +703,8 @@ std::vector<const char *> getRequiredInstanceExtensions() {
   all_required_extensions.insert(all_required_extensions.end(), vkl_extensions,
                                  vkl_extensions + num_vkl_extensions);
 
-  // Perform a sanity check if all the extensions are really supported by Vulkan
-  // on this system (if they are not, we have a problem):
+  // Perform a sanity check if all the extensions are really supported by
+  // Vulkan on this system (if they are not, we have a problem):
   for (auto ext : all_required_extensions) {
     if (!hlpIsInstanceExtensionSupported(ext)) {
       VKL_EXIT_WITH_ERROR("Required extension \"" << ext

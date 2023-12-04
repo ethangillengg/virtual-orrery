@@ -6,4 +6,5 @@ struct UserTransformations {
   float pitch = 0.0f;
   float roll = 0.0f;
   bool enableInstrinsicMode = false;
+  bool reset = false;
 };
