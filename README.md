@@ -1,8 +1,33 @@
 # 453HW4Starter
 
-This repository contains starter code that you can use for homework assignments in CPSC 453 (Introduction to Computer Graphics) at the University of Calgary.
+This code is my solution the HW4 assignment for CPSC 453 (Introduction to Computer Graphics) at the University of Calgary. I tried my best to fulfill both of the optional bonus requirements (shadow rays, and axial tilts).
 
 It is based on based on [VulkanLaunchpad](https://github.com/cg-tuwien/VulkanLaunchpad) from TU Wien, a framework targeted at those learning Vulkan. It abstracts some of the hard and overly verbose parts of the Vulkan C API.
+
+## Usage
+### Controls
+#### Rotations
+- `W`: Increment roll
+- `S`: Decrement roll
+- `A`: Increment yaw
+- `D`: Decrement yaw
+- `Q`: Increment pitch
+- `E`: Decrement pitch
+
+#### Time
+
+- `L/Right`: Increment time
+- `H/Left`: Decrement time
+
+#### Scaling
+
+- `K/Up`: Increment scaling
+- `J/Down`: Decrement scaling
+
+#### Miscellaneous
+
+- `Space`: Toggle intrinsic/extrinsic rotation mode
+- `R`: Reset to initial state
 
 ## Setup
 
