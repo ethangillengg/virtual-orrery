@@ -37,12 +37,12 @@ const vec3 bg_color = vec3(0.00, 0.00, 0.5);
 float largestT = 999999999;  // For depth testing
 
 struct Celestial {
-  vec3 pos;
-  float radius;
-  int texIndex;
-  bool noLighting;   // true if we don't want to apply lighting to this object
-  float axialPeriod; // 0 for no axial rotation
-  float axialTiltDeg;
+  vec3 pos;           // center position of celestial body
+  float radius;       // radius of celestial body
+  int texIndex;       // [0-3]
+  bool noLighting;    // true if we don't want to apply lighting to this object
+  float axialPeriod;  // 0 for no axial rotation
+  float axialTiltDeg; // 0 for no axial tilt
 };
 
 void drawCelestial(Celestial celestial);
