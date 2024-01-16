@@ -31,7 +31,11 @@
         xorg.libXi
         xorg.libX11
       ];
-
+      # fix the asset dir provided by CMake
+      postPatch = ''
+        substituteInPlace CMakeLists.txt \
+                  --replace "ASSET_DIR=\''${CMAKE_SOURCE_DIR}/assets" "ASSET_DIR=\''${CMAKE_INSTALL_PREFIX}/assets"
+      '';
       postInstall = ''
         cp $src/assets $out -r
         mv $out/bin/main $out/bin/${name}
@@ -45,7 +49,7 @@
     in rec {
       packages.virtual-orrery =
         pkgs.stdenv.mkDerivation {
-          inherit name src nativeBuildInputs buildInputs postInstall;
+          inherit name src nativeBuildInputs buildInputs postInstall postPatch;
         }
         // environment;
 

@@ -1,11 +1,3 @@
-/**
- * Starter for HW4.
- *
- * CPSC 453 | Fall 2023 | University of Calgary
- *
- * @author Usman Alim
- */
-
 // Include our framework and the Vulkan headers:
 #include "Camera.h"
 #include "UserTransforms.h"
