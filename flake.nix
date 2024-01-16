@@ -1,5 +1,5 @@
 {
-  description = "Simple object viewer in Vulkan";
+  description = "A virtual orrery in Vulkan";
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
@@ -10,7 +10,7 @@
   }:
     flake-utils.lib.eachDefaultSystem (system: let
       src = ./.;
-      name = "object-viewer";
+      name = "virtual-orrery";
       pkgs = import nixpkgs {inherit system;};
       nativeBuildInputs = with pkgs; [cmake gcc pkg-config];
 
@@ -43,13 +43,13 @@
         CMAKE_EXPORT_COMPILE_COMMANDS = 1;
       };
     in rec {
-      packages.object-viewer =
+      packages.virtual-orrery =
         pkgs.stdenv.mkDerivation {
           inherit name src nativeBuildInputs buildInputs postInstall;
         }
         // environment;
 
-      defaultPackage = packages.object-viewer;
+      defaultPackage = packages.virtual-orrery;
 
       devShell =
         pkgs.mkShell {
