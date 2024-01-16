@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(453VulkanStarter)
+project(Virtual-Orrery)
 
 #================================#
 # Compiler                       #
@@ -7,6 +7,9 @@ project(453VulkanStarter)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+#================================#
+# Git Submodules                 #
+#================================#
 find_package(Git QUIET)
 if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
 # Update submodules as needed
@@ -28,12 +31,8 @@ endif()
 
 
 #=======================================#
-# VulkanLaunchpad (dependency)   #
+# Dependencies                          #
 #=======================================#
-
-set(PROJECT_NAME HW4Starter)
-# Working directory
-add_compile_definitions("ASSET_DIR=${CMAKE_SOURCE_DIR}/assets")
 
 ### Launchpad ############################################
 
@@ -53,19 +52,16 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/shared")
 include_directories("${CMAKE_SOURCE_DIR}/shared")
 link_libraries(Shared)
 
-### Executables###########################################
+#=======================================#
+# Executable                            #
+#=======================================#
+set(PROJECT_NAME main)
 
-add_subdirectory("${CMAKE_SOURCE_DIR}/HW4")
+add_compile_definitions("ASSET_DIR=${CMAKE_SOURCE_DIR}/assets")
 
-#================================#
-# IDE specific setup              #
-#================================#
-if(CMAKE_GENERATOR MATCHES "Visual Studio")
-    #set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
-elseif(CMAKE_GENERATOR MATCHES "Xcode")
-    set(CMAKE_XCODE_GENERATE_SCHEME ON)
-    set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_GENERATE_SCHEME ON)
-    #set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_SCHEME_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY XCODE_STARTUP_PROJECT ${PROJECT_NAME})
-endif()
+file(GLOB sources src/*.cpp)
+add_executable(${PROJECT_NAME} 
+    ${sources}
+)
+
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
