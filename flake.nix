@@ -12,7 +12,7 @@
       src = ./.;
       name = "object-viewer";
       pkgs = import nixpkgs {inherit system;};
-      nativeBuildInputs = with pkgs; [cmake pkg-config];
+      nativeBuildInputs = with pkgs; [cmake gcc pkg-config];
 
       buildInputs = with pkgs; [
         glslang # or shaderc
