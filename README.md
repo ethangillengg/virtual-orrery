@@ -1,9 +1,16 @@
-# 453HW4Starter
+This code is based on [VulkanLaunchpad](https://github.com/cg-tuwien/VulkanLaunchpad) from TU Wien, a framework targeted at those learning Vulkan. It abstracts some of the hard and overly verbose parts of the Vulkan C API.
+## Demos
+![celestial bodies rotating](https://github.com/ethangillengg/virtual-orrery/assets/81479108/4bd2005c-722b-44a4-b95e-bbe512c2de1c)
+> Celestial bodies orbit as time progresses
+ 
+![fast-orbiting](https://github.com/ethangillengg/virtual-orrery/assets/81479108/1154c4ef-d6d9-4b62-bbbd-589cc2bc11b0)
+> User can increase the speed of time (and reverse it)
 
-This code is my solution the HW4 assignment for CPSC 453 (Introduction to Computer Graphics) at the University of Calgary. I tried my best to fulfill both of the optional bonus requirements (shadow rays, and axial tilts).
+![toggle-phong-shading](https://github.com/ethangillengg/virtual-orrery/assets/81479108/73b2e9ab-df96-4ead-b5f8-939a0a29821e)
+> Toggle shading (Phong and shadow casting)
 
-It is based on based on [VulkanLaunchpad](https://github.com/cg-tuwien/VulkanLaunchpad) from TU Wien, a framework targeted at those learning Vulkan. It abstracts some of the hard and overly verbose parts of the Vulkan C API.
-
+![rotations-zoom](https://github.com/ethangillengg/virtual-orrery/assets/81479108/d248a137-2301-4824-b689-4bbda755194e)
+> User controlled camera with all rotation axes and zoom
 ## Usage
 ### Controls
 #### Rotations
@@ -30,34 +37,38 @@ It is based on based on [VulkanLaunchpad](https://github.com/cg-tuwien/VulkanLau
 - `Tab`: Toggle shading (both phong and shadow casting)
 - `R`: Reset to initial state
 
+#### Modifiers
+- `Shift`: Increase increment/decrement for time, scaling, or zoom while held down
+
 ## Setup
+### Using the provided Nix flake
+1. [Install Nix](https://nixos.org/download.html)
+2. Run the flake:
+```sh
+nix run 'git+https://github.com/ethangillengg/virtual-orrery?submodules=1' --experimental-features 'nix-command flakes'
+```
 
-1. Clone this repository using the ```https``` address and switch to the `HW4` branch. 
-    ```
-    git clone <https address>
-    ```
+### Manual
+1. Clone this repository:
+```sh
+git clone https://github.com/ethangillengg/virtual-orrery
+```
 2. Optionally, in your project directory, create a new folder called build and change into it:
-    ```
-    mkdir build
-    cd build
-    ```
-3. Use cmake to generate the necessary files for compiling the project. Please review the [Setup Instructions](https://github.com/cg-tuwien/VulkanLaunchpad#setup-instructions) for `VulkanLaunchpadStarter`` to setup your IDE and build environment. For this step, you can either use cmake-gui or run the cmake command directly in the terminal:
-    ```
-    cmake ..
-    ```
-4. For lab computers to setup vulkan sdk env use:
-    ```
-    source /home/share/gfx/vulkanSDK/1.3.261.1/setup-env.sh
-    ```
-5. You can now compile and run your project. In most cases, this is as simple as:
-    ```
-    make -j
-    HW4/HW4
-    ```
+```sh
+mkdir build
+cd build
+```
+3. Use cmake to generate the necessary files for compiling the project. Please review the [Setup Instructions](https://github.com/cg-tuwien/VulkanLaunchpad#setup-instructions) for `VulkanLaunchpadStarter` to setup your IDE and build environment. For this step, you can either use cmake-gui or run the cmake command directly in the terminal:
+```sh
+cmake ..
+```
+4. You can now compile and run your project. In most cases, this is as simple as:
+```sh
+make -j
+HW4/HW4
+```
 
-The main executable takes only one optional argument on the command line: the path to the assets it needs.
-  This only needs to be invoked if the program is somehow unable to find the assets directory, which is unlikely to occur 
-  during normal development.
+The main executable takes only one optional argument on the command line: the path to the assets it needs. This only needs to be invoked if the program is somehow unable to find the assets directory, which is unlikely to occur during normal development.
 
 ## Troubleshooting
 
@@ -68,25 +79,3 @@ The main executable takes only one optional argument on the command line: the pa
 - For windows, ensure that the c++ desktop development kit is installed inside visual studio. You can use developer command prompt in windows.
 
 - For macOS, you must have the latest version of OS and Xcode installed.
-
-## Available Examples and Skeletons
-
-This branch consists of the following:
-- `/HW4`:
-
-Starter code for HW4 which is a functioning example that renders a full screen quad and uses it to generate rays for 
-  ray tracing in the fragment shader. A fragment shader is provided that intersects rays with a unit sphere located at the origin. 
-  An arcball camera is integrated so that the user can move the camera around the ray-traced sphere using the mouse. 
-  Texture setup code is also provided and all the textures you need are properly set up, with the fragment shader demonstrating
-  how to access all of them.
-
-Shader hot-reloaing is supported via `F5`. Increment and decrement the current time by using the left and right arrow keys.
-  The demo fragment shader uses the time variable to cycle between all the loaded textures; you will want to change this in your
-  own implementation.
-
-The starter code has been set up so that most students will be able to fulfill all the basic requirements by modifying a single
-  file, the fragment shader. You may alter the starter if you wish, but bear in mind that the sole input of mechanical orreries 
-  is a crank that can be turned backwards and forwards; all orbital mechanics were handled internally, with no external assistance. 
-  Adding transformations beyond the view transform should not be necessary, and could cost you marks. Any variable you add should
-  only deal with cosmetic details, such as toggling shading on or off.
-  
